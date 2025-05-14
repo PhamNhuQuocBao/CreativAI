@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -159,6 +159,7 @@
 .ck-content > p,
 .ck-content > pre {
   margin: revert;
+  color: black;
 }
 
 .ck-content > ol,
@@ -182,24 +183,27 @@
   font-weight: revert;
 }
 
-table {
+.prose table {
   border-collapse: revert;
 }
-ol,
-ul,
-li {
+.prose ol,
+.prose ul,
+.prose li {
   list-style: revert;
+  margin: revert;
+  padding: revert;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-pre,
-p {
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6,
+.prose pre,
+.prose p {
   font-size: revert;
   font-weight: revert;
+  color: black;
   /* margin: revert; */
 }

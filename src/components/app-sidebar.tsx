@@ -1,6 +1,6 @@
-"use client";
+'use client'
 
-import { Home, FileSpreadsheet } from "lucide-react";
+import { Home, FileSpreadsheet } from 'lucide-react'
 
 import {
   Sidebar,
@@ -11,21 +11,22 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/sidebar'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { cn } from '@/lib/utils'
+import { ROUTES } from '@/constants'
 
 // Menu items.
 const items = [
   {
-    title: "Home",
-    url: "/dashboard",
+    title: 'Home',
+    url: ROUTES.HOME,
     icon: Home,
   },
   {
-    title: "Blog",
-    url: "/blog",
+    title: 'Blog',
+    url: ROUTES.BLOG,
     icon: FileSpreadsheet,
   },
   //   {
@@ -43,10 +44,10 @@ const items = [
   //     url: "#",
   //     icon: Settings,
   //   },
-];
+]
 
 export function AppSidebar() {
-  const pathname = usePathname();
+  const pathname = usePathname()
 
   return (
     <Sidebar>
@@ -61,8 +62,8 @@ export function AppSidebar() {
                     <Link
                       href={item.url}
                       className={cn(
-                        "hover:!bg-black hover:text-white transition-all",
-                        pathname.includes(item.url) && "bg-black text-white"
+                        'hover:!bg-black hover:text-white transition-all',
+                        pathname.includes(item.url) && 'bg-black text-white'
                       )}
                     >
                       <item.icon />
@@ -76,5 +77,5 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
     </Sidebar>
-  );
+  )
 }

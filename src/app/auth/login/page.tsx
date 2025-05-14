@@ -1,13 +1,14 @@
-"use client";
+'use client'
 
-import React from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import React from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { ROUTES } from '@/constants'
 
 const Page = () => {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <div className="max-w-[440px] w-full">
@@ -16,7 +17,7 @@ const Page = () => {
 
         <Input className="w-full" placeholder="Password" />
 
-        <Button className="w-full" onClick={() => router.push("/dashboard")}>
+        <Button className="w-full" onClick={() => router.push(ROUTES.INDEX)}>
           Login
         </Button>
 
@@ -28,7 +29,7 @@ const Page = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page
