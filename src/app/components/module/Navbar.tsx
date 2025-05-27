@@ -9,18 +9,35 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { ProfileForm } from './ProfileForm'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ROUTES } from '@/constants'
+import authService from '@/services/auth.service'
 
 const Navbar = () => {
   const router = useRouter()
+  const [isProfileOpen, setIsProfileOpen] = React.useState(false)
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false)
+  const user = authService.getCurrentUser()
+
+  const handleOpenProfile = () => {
+    setIsDropdownOpen(false) // Close dropdown first
+    setIsProfileOpen(true)
+  }
+
   return (
-    <div className=" fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
       <div className="px-2 py-3 container">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-6 w-full">
@@ -33,22 +50,70 @@ const Navbar = () => {
             <Button onClick={() => router.push(ROUTES.BLOG)}>
               Create post
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src="https://github.com/shadcn.png" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Dashboard</DropdownMenuItem>
-                <DropdownMenuItem>Create post</DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>Logout</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+
+            {/* Profile Menu */}
+            <div className="relative">
+              <DropdownMenu
+                open={isDropdownOpen}
+                onOpenChange={setIsDropdownOpen}
+              >
+                <DropdownMenuTrigger asChild>
+                  <Avatar className="cursor-pointer">
+                    <AvatarImage
+                      src={user?.avatar || 'https://github.com/shadcn.png'}
+                    />
+                    <AvatarFallback>CN</AvatarFallback>
+                  </Avatar>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    className="cursor-pointer transition-all"
+                    onClick={handleOpenProfile}
+                  >
+                    My Account
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="cursor-pointer transition-all"
+                    onClick={() => router.push(ROUTES.HOME)}
+                  >
+                    Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer transition-all"
+                    onClick={() => router.push(ROUTES.BLOG)}
+                  >
+                    Create post
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    className="cursor-pointer hover:!bg-black hover:!text-white transition-all"
+                    onClick={() => {
+                      authService.logout()
+                      router.push(ROUTES.LOGIN)
+                    }}
+                  >
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Profile Dialog */}
+              <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Edit Profile</DialogTitle>
+                    <DialogDescription>
+                      Make changes to your profile here. Click save when
+                      you&apos;re done.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="p-4">
+                    <ProfileForm />
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
       </div>

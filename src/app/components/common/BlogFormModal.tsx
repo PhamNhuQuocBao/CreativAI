@@ -1,6 +1,6 @@
 'use client'
 
-import React, { KeyboardEvent, useCallback, useState } from 'react'
+import React, { KeyboardEvent, useCallback, useState, useEffect } from 'react'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,13 +13,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Plus, Loader2 } from 'lucide-react'
+import { Plus, Loader2, Pencil } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ENDPOINTS } from '@/constants'
-import { APIs } from '@/config'
 import axios from 'axios'
 import CkEditor from './CKEditor'
+import { useCreateBlog, useUpdateBlog } from '@/hooks/query-services/blog'
+import useToast from '@/hooks/use-toast'
+import { BlogResponseType } from '@/types/blog'
 
 interface BlogFormData {
   title: string
@@ -29,19 +30,29 @@ interface BlogFormData {
   status: 'draft' | 'published'
   aiGenerated?: {
     content: string
-    prompt: string
+    images: string[]
     modelUsed: string
+    prompt: string
+    _id: string
   }
 }
 
-const BlogFormModal = () => {
-  const [formData, setFormData] = useState<BlogFormData>({
-    title: '',
-    content: '',
-    description: '',
-    tags: [],
-    status: 'published',
-  })
+interface BlogFormModalProps {
+  blog?: BlogResponseType
+  mode?: 'create' | 'update'
+}
+
+const defaultFormData: BlogFormData = {
+  title: '',
+  content: '',
+  description: '',
+  tags: [],
+  status: 'published',
+}
+
+const BlogFormModal = ({ blog, mode = 'create' }: BlogFormModalProps) => {
+  const { error, success } = useToast()
+  const [formData, setFormData] = useState<BlogFormData>(defaultFormData)
   const [editorData, setEditorData] = useState<string>('')
   const [previewData, setPreviewData] = useState<string>('')
   const [tagField, setTagField] = useState('')
@@ -49,6 +60,24 @@ const BlogFormModal = () => {
   const [imagePrompt, setImagePrompt] = useState('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false)
+
+  const { mutate: createBlog, isPending: isCreating } = useCreateBlog()
+  const { mutate: updateBlog, isPending: isUpdating } = useUpdateBlog()
+
+  useEffect(() => {
+    if (blog && mode === 'update') {
+      setFormData({
+        title: blog.title,
+        content: blog.content,
+        description: blog.content.slice(0, 150), // Using content as description for now
+        tags: blog.tags,
+        status: blog.status,
+        aiGenerated: blog.aiGenerated,
+      })
+      setEditorData(blog.content)
+      setPreviewData(blog.content)
+    }
+  }, [blog, mode])
 
   const handleOnUpdate = (content: string): void => {
     setPreviewData(content)
@@ -104,14 +133,16 @@ const BlogFormModal = () => {
       )
 
       return response.data.secure_url
-    } catch (error) {
-      console.error('Error uploading image to Cloudinary:', error)
-      throw error
+    } catch (err) {
+      console.error('Error uploading image to Cloudinary:', err)
+      error('Failed to upload image')
+      throw err
     }
   }
 
   const handleGenerateContent = useCallback(async () => {
     if (!prompt) {
+      error('Please enter a prompt')
       return
     }
 
@@ -137,17 +168,22 @@ const BlogFormModal = () => {
           content: contentFormatted,
           prompt,
           modelUsed: 'gemini-2.0-flash',
+          images: [],
+          _id: prev.aiGenerated?._id || '',
         },
       }))
-    } catch (error) {
-      console.error('Error generating content:', error)
+      success('Content generated successfully')
+    } catch (err) {
+      console.error('Error generating content:', err)
+      error('Failed to generate content')
     } finally {
       setIsGenerating(false)
     }
-  }, [prompt])
+  }, [error, prompt, success])
 
   const handleGenerateImage = useCallback(async () => {
     if (!imagePrompt) {
+      error('Please enter an image prompt')
       return
     }
 
@@ -185,38 +221,47 @@ const BlogFormModal = () => {
           ...prev,
           content: prev.content + imageHtml,
         }))
+        success('Image generated successfully')
       }
-    } catch (error) {
-      console.error('Error generating image:', error)
+    } catch (err) {
+      console.error('Error generating image:', err)
+      error('Failed to generate image')
     } finally {
       setIsGeneratingImage(false)
       setImagePrompt('')
     }
-  }, [imagePrompt])
+  }, [error, imagePrompt, success])
 
   const handleSubmit = async (status: 'draft' | 'published') => {
     try {
       const payload = {
         ...formData,
         status,
+        aiGenerated: formData.aiGenerated
+          ? {
+              ...formData.aiGenerated,
+              images: formData.aiGenerated.images || [],
+              _id: formData.aiGenerated._id || '',
+            }
+          : undefined,
       }
 
-      const response = await APIs.post(ENDPOINTS.BLOGS, payload)
-      console.log('Blog created:', response.data)
+      if (mode === 'update' && blog) {
+        updateBlog({
+          id: blog._id,
+          data: payload,
+        })
+      } else {
+        createBlog(payload)
+      }
 
       // Reset form
-      setFormData({
-        title: '',
-        content: '',
-        description: '',
-        tags: [],
-        status: 'published',
-      })
+      setFormData(defaultFormData)
       setEditorData('')
       setPreviewData('')
       setPrompt('')
     } catch (error) {
-      console.error('Error creating blog:', error)
+      console.error('Error saving blog:', error)
     }
   }
 
@@ -224,15 +269,25 @@ const BlogFormModal = () => {
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button>
-          <Plus />
-          <span>Create new post</span>
+          {mode === 'create' ? (
+            <>
+              <Plus className="mr-2" />
+              <span>Create new post</span>
+            </>
+          ) : (
+            <Pencil className="h-4 w-4" />
+          )}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="sm:max-w-[80%] max-h-[80vh] overflow-y-auto">
         <AlertDialogHeader>
-          <AlertDialogTitle>Create New Blog Post</AlertDialogTitle>
+          <AlertDialogTitle>
+            {mode === 'create' ? 'Create New Blog Post' : 'Edit Blog Post'}
+          </AlertDialogTitle>
           <AlertDialogDescription>
-            Fill in the details below to create a new blog post.
+            {mode === 'create'
+              ? 'Fill in the details below to create a new blog post.'
+              : 'Update the details of your blog post.'}
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -251,21 +306,6 @@ const BlogFormModal = () => {
                 placeholder="Title"
                 required
                 value={formData.title}
-                onChange={handleInputChange}
-              />
-            </div>
-
-            {/* DESCRIPTION */}
-            <div className="space-y-1.5 w-full">
-              <Label htmlFor="description" className="text-black">
-                Description <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                type="text"
-                id="description"
-                placeholder="Short description"
-                required
-                value={formData.description}
                 onChange={handleInputChange}
               />
             </div>
@@ -348,7 +388,7 @@ const BlogFormModal = () => {
               <Input
                 type="text"
                 id="tags"
-                placeholder="Tags"
+                placeholder="Press Enter to add tags"
                 value={tagField}
                 onChange={(e) => setTagField(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -404,11 +444,17 @@ const BlogFormModal = () => {
 
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => handleSubmit('draft')}>
-            Draft
+          <AlertDialogAction
+            onClick={() => handleSubmit('draft')}
+            disabled={isCreating || isUpdating}
+          >
+            {isCreating || isUpdating ? 'Saving...' : 'Save as Draft'}
           </AlertDialogAction>
-          <AlertDialogAction onClick={() => handleSubmit('published')}>
-            Create
+          <AlertDialogAction
+            onClick={() => handleSubmit('published')}
+            disabled={isCreating || isUpdating}
+          >
+            {isCreating || isUpdating ? 'Saving...' : 'Publish'}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

@@ -15,7 +15,7 @@ const LoadingFallback = () => (
 
 const Page = async ({ params }: { params: { id: string } }) => {
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto py-8 relative">
       <Suspense fallback={<LoadingFallback />}>
         <BlogContent id={params.id} />
       </Suspense>

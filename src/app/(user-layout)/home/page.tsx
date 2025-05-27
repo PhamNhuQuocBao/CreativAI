@@ -3,7 +3,7 @@
 import BlogCard from '@/app/components/common/BlogCard'
 import BlogCardSkeleton from '@/app/components/common/BlogCardSkeleton'
 import ErrorMessage from '@/app/components/common/ErrorMessage'
-import { useBlogs } from '@/hooks'
+import { usePublishedBlogs } from '@/hooks'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
@@ -17,7 +17,7 @@ const LoadingState = () => (
 
 const Page = () => {
   const router = useRouter()
-  const { data, isLoading, error } = useBlogs()
+  const { data, isLoading, error } = usePublishedBlogs()
 
   if (isLoading) return <LoadingState />
   if (error) return <ErrorMessage error={error} />

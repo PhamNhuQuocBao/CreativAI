@@ -8,13 +8,13 @@ interface AIGenerated {
   _id: string
 }
 
-interface ReactionCounts {
+export interface ReactionCounts {
   like: number
   love: number
   wow: number
   angry: number
   dislike: number
-  _id: string
+  [key: string]: number
 }
 
 interface Rating {

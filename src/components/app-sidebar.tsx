@@ -1,6 +1,6 @@
 'use client'
 
-import { Home, FileSpreadsheet } from 'lucide-react'
+import { Home, FileSpreadsheet, LogOut, ExternalLink } from 'lucide-react'
 
 import {
   Sidebar,
@@ -11,11 +11,14 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarFooter,
 } from '@/components/ui/sidebar'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ROUTES } from '@/constants'
+import authService from '@/services/auth.service'
+import { useRouter } from 'next/navigation'
 
 // Menu items.
 const items = [
@@ -29,25 +32,16 @@ const items = [
     url: ROUTES.BLOG,
     icon: FileSpreadsheet,
   },
-  //   {
-  //     title: "Calendar",
-  //     url: "#",
-  //     icon: Calendar,
-  //   },
-  //   {
-  //     title: "Search",
-  //     url: "#",
-  //     icon: Search,
-  //   },
-  //   {
-  //     title: "Settings",
-  //     url: "#",
-  //     icon: Settings,
-  //   },
 ]
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+
+  const handleLogout = () => {
+    authService.logout()
+    router.push(ROUTES.LOGIN)
+  }
 
   return (
     <Sidebar>
@@ -76,6 +70,35 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+
+      <SidebarFooter className="border-t">
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link
+                    href="/"
+                    className="hover:!bg-black hover:text-white transition-all"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    <span>Go to Home</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  onClick={handleLogout}
+                  className="hover:!bg-red-500 hover:text-white transition-all"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarFooter>
     </Sidebar>
   )
 }

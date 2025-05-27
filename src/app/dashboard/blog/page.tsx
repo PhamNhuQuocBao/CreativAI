@@ -1,6 +1,6 @@
-import BlogFormModal from "@/app/components/common/BlogFormModal";
-import { TableDemo } from "@/app/components/common/Table";
-import React from "react";
+import BlogFormModal from '@/app/components/common/BlogFormModal'
+import { TableDemo } from '@/app/components/common/Table'
+import React from 'react'
 
 const Page = () => {
   return (
@@ -14,7 +14,7 @@ const Page = () => {
         <TableDemo />
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Page;
+export default Page
