@@ -29,6 +29,7 @@ const profileSchema = z.object({
   email: z.string().email('Invalid email address'),
   bio: z.string().optional(),
   avatar: z.string().optional(),
+  phone: z.string().optional(),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
@@ -49,6 +50,7 @@ export function ProfileForm() {
       email: user?.email || '',
       bio: user?.bio || '',
       avatar: user?.avatar || '',
+      phone: user?.phone || '',
     },
   })
 
@@ -197,6 +199,21 @@ export function ProfileForm() {
                   className="resize-none"
                   {...field}
                 />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {/* Phone */}
+        <FormField
+          control={form.control}
+          name="phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Phone</FormLabel>
+              <FormControl>
+                <Input placeholder="Your phone number" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

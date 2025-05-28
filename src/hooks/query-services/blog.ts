@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { blogService } from '@/services'
+import { BlogCreateInput, blogService } from '@/services'
 import { QUERY_KEY } from '@/constants'
-import { BlogResponseType } from '@/types/blog'
 
 export const useBlogs = () => {
   const { data, isLoading, error } = useQuery({
@@ -61,7 +60,7 @@ export const useUpdateBlog = () => {
       data,
     }: {
       id: string
-      data: Partial<BlogResponseType>
+      data: Partial<BlogCreateInput>
     }) => blogService.updateBlog(id, data),
     onSuccess: (updatedBlog) => {
       // Invalidate all blog queries

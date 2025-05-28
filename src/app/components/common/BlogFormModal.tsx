@@ -27,7 +27,7 @@ interface BlogFormData {
   content: string
   description: string
   tags: string[]
-  status: 'draft' | 'published'
+  status: 'draft' | 'published' | 'pending_review' | 'rejected'
   aiGenerated?: {
     content: string
     images: string[]
@@ -446,13 +446,23 @@ const BlogFormModal = ({ blog, mode = 'create' }: BlogFormModalProps) => {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={() => handleSubmit('draft')}
-            disabled={isCreating || isUpdating}
+            disabled={
+              isCreating ||
+              isUpdating ||
+              formData.status === 'pending_review' ||
+              formData.status === 'rejected'
+            }
           >
             {isCreating || isUpdating ? 'Saving...' : 'Save as Draft'}
           </AlertDialogAction>
           <AlertDialogAction
             onClick={() => handleSubmit('published')}
-            disabled={isCreating || isUpdating}
+            disabled={
+              isCreating ||
+              isUpdating ||
+              formData.status === 'pending_review' ||
+              formData.status === 'rejected'
+            }
           >
             {isCreating || isUpdating ? 'Saving...' : 'Publish'}
           </AlertDialogAction>

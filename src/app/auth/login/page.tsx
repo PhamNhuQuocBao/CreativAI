@@ -76,9 +76,14 @@ const Page = () => {
         password: formData.password,
       })
 
-      success('Login successful!')
+      const role = authService.getCurrentUser()?.role
 
-      router.push(ROUTES.INDEX)
+      success('Login successful!')
+      if (role === 'admin') {
+        router.push(ROUTES.MODERATION)
+      } else {
+        router.push(ROUTES.INDEX)
+      }
     } catch (err) {
       if (err instanceof Error) {
         error(err.message || 'Login failed')

@@ -6,7 +6,7 @@ export type BlogCreateInput = {
   title: string
   content: string
   tags: string[]
-  status: 'draft' | 'published'
+  status: 'draft' | 'published' | 'pending_review' | 'rejected'
   aiGenerated?: {
     content?: string
     images?: string[]

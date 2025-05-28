@@ -30,7 +30,7 @@ export interface BlogResponseType {
   slug: string
   content: string
   authorId: UserType
-  status: 'draft' | 'published'
+  status: 'draft' | 'published' | 'pending_review' | 'rejected'
   tags: string[]
   aiGenerated: AIGenerated
   views: number

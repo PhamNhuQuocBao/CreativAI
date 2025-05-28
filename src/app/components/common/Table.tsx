@@ -79,6 +79,10 @@ export function TableDemo() {
                                 blog.status === 'published',
                               'bg-yellow-50 text-yellow-700 ring-yellow-600/20':
                                 blog.status === 'draft',
+                              'bg-red-50 text-red-700 ring-red-600/20':
+                                blog.status === 'rejected',
+                              'bg-blue-50 text-blue-700 ring-blue-600/20':
+                                blog.status === 'pending_review',
                             }
                           )}
                         >

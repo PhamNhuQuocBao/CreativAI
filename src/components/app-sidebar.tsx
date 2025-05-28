@@ -1,6 +1,12 @@
 'use client'
 
-import { Home, FileSpreadsheet, LogOut, ExternalLink } from 'lucide-react'
+import {
+  Home,
+  FileSpreadsheet,
+  BarChart2,
+  LogOut,
+  ExternalLink,
+} from 'lucide-react'
 
 import {
   Sidebar,
@@ -31,6 +37,11 @@ const items = [
     title: 'Blog',
     url: ROUTES.BLOG,
     icon: FileSpreadsheet,
+  },
+  {
+    title: 'Statistics',
+    url: ROUTES.STATISTICS,
+    icon: BarChart2,
   },
 ]
 

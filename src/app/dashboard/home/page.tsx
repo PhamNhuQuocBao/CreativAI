@@ -1,84 +1,185 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import axios from 'axios'
-import Image from 'next/image'
-import React, { useCallback, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { dashboardService } from '@/services/dashboard.service'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
+import {
+  FileText,
+  MessageSquare,
+  ThumbsUp,
+  Eye,
+  MessageCircle,
+  Heart,
+} from 'lucide-react'
+import { format } from 'date-fns'
+import Link from 'next/link'
 
-const Page = () => {
-  const [prompt, setPrompt] = useState<string>('')
+const DashboardPage = () => {
+  const { data: overview } = useQuery({
+    queryKey: ['dashboardOverview'],
+    queryFn: () => dashboardService.getOverview(),
+  })
 
-  const [generatedContent, setGeneratedContent] = useState<string>('')
-  const [generatedImage, setGeneratedImage] = useState<string>('')
+  const { data: recentPosts } = useQuery({
+    queryKey: ['recentPosts'],
+    queryFn: () => dashboardService.getRecentPosts(),
+  })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPrompt(e.target.value)
-  }
-
-  const handleGenerateContent = useCallback(async () => {
-    if (!prompt) {
-      return
-    }
-
-    try {
-      const response = await axios.post('/api/content-generator', {
-        prompt,
-      })
-
-      const content: string = response.data.content
-      const contentFormatted = content.replace('```html', '').replace('```', '')
-
-      setGeneratedContent(contentFormatted)
-    } catch (error) {
-      console.error('Error generating content:', error)
-    }
-  }, [prompt])
-
-  const handleGenerateContentImage = useCallback(async () => {
-    if (!prompt) {
-      return
-    }
-
-    try {
-      const response = await axios.post('/api/image-generator', {
-        topic: prompt,
-      })
-
-      console.log(response.data)
-      setGeneratedImage(response.data.imageName)
-    } catch (error) {
-      console.error('Error generating content:', error)
-    }
-  }, [prompt])
+  const { data: recentActivities } = useQuery({
+    queryKey: ['recentActivities'],
+    queryFn: () => dashboardService.getRecentActivities(),
+  })
 
   return (
-    <div>
-      <div className="flex gap-6">
-        <div className="w-full space-y-2">
-          <Input onChange={handleChange} placeholder="Content generator" />
-          <Button onClick={handleGenerateContent}>Gen</Button>
-        </div>
-
-        <div className="w-full space-y-2">
-          <Input onChange={handleChange} placeholder="Image generator" />
-          <Button onClick={handleGenerateContentImage}>Gen</Button>
-        </div>
+    <div className="space-y-6">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Posts</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {overview?.totalPosts || 0}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Comments
+            </CardTitle>
+            <MessageSquare className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {overview?.totalComments || 0}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Reactions
+            </CardTitle>
+            <ThumbsUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {overview?.totalReactions || 0}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Views</CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {overview?.totalViews || 0}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div dangerouslySetInnerHTML={{ __html: generatedContent }}></div>
-      <div>
-        {generatedImage && (
-          <Image
-            src={`/${generatedImage}`}
-            alt="image"
-            width={300}
-            height={300}
-          />
-        )}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-4">
+          <CardHeader>
+            <CardTitle>Recent Posts</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Views</TableHead>
+                  <TableHead>Engagement</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentPosts?.map((post) => (
+                  <TableRow key={post._id}>
+                    <TableCell>
+                      <Link
+                        href={`/blog/${post._id}`}
+                        className="hover:underline"
+                      >
+                        {post.title}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
+                      {format(new Date(post.createdAt), 'MMM dd, yyyy')}
+                    </TableCell>
+                    <TableCell>{post.views}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <MessageSquare className="h-4 w-4" />
+                        {post.commentCount}
+                        <ThumbsUp className="h-4 w-4 ml-2" />
+                        {post.totalReactions}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-3">
+          <CardHeader>
+            <CardTitle>Recent Activities</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {recentActivities?.map((activity) => (
+                <div
+                  key={activity._id}
+                  className="flex items-center gap-4 text-sm"
+                >
+                  {activity.type === 'comment' ? (
+                    <MessageCircle className="h-4 w-4" />
+                  ) : (
+                    <Heart className="h-4 w-4" />
+                  )}
+                  <div className="flex-1">
+                    <p>
+                      <span className="font-medium">{activity.userName}</span>{' '}
+                      {activity.type === 'comment'
+                        ? 'commented on'
+                        : 'reacted to'}{' '}
+                      <Link
+                        href={`/blog/${activity.blogId}`}
+                        className="font-medium hover:underline"
+                      >
+                        {activity.blogTitle}
+                      </Link>
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(
+                        new Date(activity.createdAt),
+                        'MMM dd, yyyy HH:mm'
+                      )}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
 }
 
-export default Page
+export default DashboardPage
